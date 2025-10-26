@@ -87,10 +87,10 @@ metadata:
   name: k8smon-opencost
   namespace: default
   labels:
-    helm.sh/chart: opencost-1.42.3
+    helm.sh/chart: opencost-2.4.0
     app.kubernetes.io/name: opencost
     app.kubernetes.io/instance: k8smon
-    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/version: "1.118.0"
     app.kubernetes.io/part-of: opencost
     app.kubernetes.io/managed-by: Helm
 automountServiceAccountToken: true
@@ -68738,10 +68738,10 @@ kind: ClusterRole
 metadata:
   name: k8smon-opencost
   labels:
-    helm.sh/chart: opencost-1.42.3
+    helm.sh/chart: opencost-2.4.0
     app.kubernetes.io/name: opencost
     app.kubernetes.io/instance: k8smon
-    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/version: "1.118.0"
     app.kubernetes.io/part-of: opencost
     app.kubernetes.io/managed-by: Helm
 rules:
@@ -68750,6 +68750,7 @@ rules:
       - configmaps
       - deployments
       - nodes
+      - nodes/proxy
       - pods
       - services
       - resourcequotas
@@ -68938,10 +68939,10 @@ kind: ClusterRoleBinding
 metadata:
   name: k8smon-opencost
   labels:
-    helm.sh/chart: opencost-1.42.3
+    helm.sh/chart: opencost-2.4.0
     app.kubernetes.io/name: opencost
     app.kubernetes.io/instance: k8smon
-    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/version: "1.118.0"
     app.kubernetes.io/part-of: opencost
     app.kubernetes.io/managed-by: Helm
 roleRef:
@@ -69189,10 +69190,10 @@ metadata:
   name: k8smon-opencost
   namespace: default
   labels:
-    helm.sh/chart: opencost-1.42.3
+    helm.sh/chart: opencost-2.4.0
     app.kubernetes.io/name: opencost
     app.kubernetes.io/instance: k8smon
-    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/version: "1.118.0"
     app.kubernetes.io/part-of: opencost
     app.kubernetes.io/managed-by: Helm
 spec:
@@ -69204,6 +69205,9 @@ spec:
     - name: http
       port: 9003
       targetPort: 9003
+    - name: mcp-server
+      port: 8081
+      targetPort: 8081
 ---
 # Source: k8s-monitoring/charts/prometheus-node-exporter/templates/service.yaml
 apiVersion: v1
@@ -69780,12 +69784,14 @@ metadata:
   name: k8smon-opencost
   namespace: default
   labels:
-    helm.sh/chart: opencost-1.42.3
+    helm.sh/chart: opencost-2.4.0
     app.kubernetes.io/name: opencost
     app.kubernetes.io/instance: k8smon
-    app.kubernetes.io/version: "1.113.0"
+    app.kubernetes.io/version: "1.118.0"
     app.kubernetes.io/part-of: opencost
     app.kubernetes.io/managed-by: Helm
+  annotations:
+    checksum/configs: 930260623d85bc2f803e4342c37094e5e1f9ba8b76314664d4abc01dca140c56
 spec:
   replicas: 1
   selector:
@@ -69804,6 +69810,7 @@ spec:
         app.kubernetes.io/instance: k8smon
     spec:
       serviceAccountName: k8smon-opencost
+      automountServiceAccountToken: true
       tolerations:
         - effect: NoSchedule
           key: kubernetes.io/arch
@@ -69811,17 +69818,19 @@ spec:
           value: arm64
       nodeSelector:
         kubernetes.io/os: linux
+      initContainers:
       containers:
         - name: k8smon-opencost
-          image: ghcr.io/opencost/opencost:1.113.0@sha256:b313d6d320058bbd3841a948fb636182f49b46df2368d91e2ae046ed03c0f83c
+          image: ghcr.io/opencost/opencost:1.118.0@sha256:c1a08767fe3c3b2964a75885c145bae0cba32225c0b4c1e0382a77566aef93e9
           imagePullPolicy: IfNotPresent
           args:
           ports:
             - containerPort: 9003
               name: http
+            - containerPort: 8081
+              name: mcp-server
           resources:
             limits:
-              cpu: 999m
               memory: 1Gi
             requests:
               cpu: 10m
@@ -69852,12 +69861,16 @@ spec:
               value: info
             - name: CUSTOM_COST_ENABLED
               value: "false"
-            - name: KUBECOST_NAMESPACE
+            - name: INSTALL_NAMESPACE
               value: default
+            - name: PROMETHEUS_QUERY_RESOLUTION_SECONDS
+              value: "300"
             - name: API_PORT
               value: "9003"
             - name: PROMETHEUS_SERVER_ENDPOINT
               value: "https://prom.example.com/api/prom"
+            - name: INSECURE_SKIP_VERIFY
+              value: "false"
             - name: CLUSTER_ID
               value: "default-cluster"
             - name: DB_BASIC_AUTH_USERNAME
@@ -69870,8 +69883,10 @@ spec:
                 secretKeyRef:
                   name: prometheus-k8s-monitoring
                   key: password
-            - name: DATA_RETENTION_DAILY_RESOLUTION_DAYS
+            - name: RESOLUTION_1D_RETENTION
               value: "15"
+            - name: RESOLUTION_1H_RETENTION
+              value: "49"
             - name: CLOUD_COST_ENABLED
               value: "false"
             - name: CLOUD_COST_MONTH_TO_DATE_INTERVAL
@@ -69893,6 +69908,11 @@ spec:
               value: "true"
             - name: PROM_CLUSTER_ID_LABEL
               value: "cluster"
+            # MCP Server Configuration
+            - name: MCP_SERVER_ENABLED
+              value: "true"
+            - name: MCP_HTTP_PORT
+              value: "8081"
 ---
 # Source: k8s-monitoring/charts/alloy/templates/controllers/statefulset.yaml
 apiVersion: apps/v1
@@ -70008,6 +70028,9 @@ spec:
         - name: config
           configMap:
             name: k8smon-alloy
+---
+# Source: k8s-monitoring/charts/opencost/templates/ingress.yaml
+---
 ---
 # Source: k8s-monitoring/charts/prometheus-operator-crds/charts/crds/templates/crd-alertmanagerconfigs.yaml
 # https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/v0.79.2/example/prometheus-operator-crd/monitoring.coreos.com_alertmanagerconfigs.yaml
