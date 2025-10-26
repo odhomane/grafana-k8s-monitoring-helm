@@ -10,9 +10,9 @@ dependencies:
   version: 0.7.1
 - name: kepler
   repository: https://sustainable-computing-io.github.io/kepler-helm-chart
-  version: 0.5.12
+  version: 0.6.1
 - name: opencost
   repository: https://opencost.github.io/opencost-helm-chart
   version: 1.42.3
-digest: sha256:ab54057daaf938cca1e2ce92f1e331213e713dfde52bff70b1cfcc43dad0adc9
-generated: "2024-12-19T12:43:03.844669-05:00"
+digest: sha256:28be9547315c8d7adaac9484c0d3c71267d65fbc27c4c5aae781b56b4f5e93a9
+generated: "2025-10-26T01:58:41.356202934Z"
