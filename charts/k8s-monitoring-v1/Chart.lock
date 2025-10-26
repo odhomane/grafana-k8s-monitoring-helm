@@ -31,6 +31,6 @@ dependencies:
   version: 0.5.12
 - name: beyla
   repository: https://grafana.github.io/helm-charts
-  version: 1.5.0
-digest: sha256:213be57bb5b492f6aebe1328689a50e5b845b1df6822879fa8fdede2b6708eaa
-generated: "2024-12-19T00:23:01.754790316Z"
+  version: 1.9.9
+digest: sha256:5541b5e34bc75e12657747054f54101889ed3e30d3d0815ccd59344aac2d4e9d
+generated: "2025-10-26T01:58:40.863320647Z"
