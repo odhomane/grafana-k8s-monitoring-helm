@@ -4,7 +4,7 @@ dependencies:
   version: 5.27.0
 - name: prometheus-node-exporter
   repository: https://prometheus-community.github.io/helm-charts
-  version: 4.43.0
+  version: 4.49.1
 - name: prometheus-windows-exporter
   repository: https://prometheus-community.github.io/helm-charts
   version: 0.7.1
@@ -14,5 +14,5 @@ dependencies:
 - name: opencost
   repository: https://opencost.github.io/opencost-helm-chart
   version: 1.42.3
-digest: sha256:ab54057daaf938cca1e2ce92f1e331213e713dfde52bff70b1cfcc43dad0adc9
-generated: "2024-12-19T12:43:03.844669-05:00"
+digest: sha256:36ec6c431ca5aa0def400ee07471d2931d1ed778872802ba5fe5d1bbe15a0bf9
+generated: "2025-10-26T01:58:40.127499367Z"
